@@ -247,11 +247,18 @@ func TestBrickEntryCreate(t *testing.T) {
 	n.Info.Id = nodeid
 	n.Info.Hostnames.Manage = []string{"manage"}
 	n.Info.Hostnames.Storage = []string{"storage"}
+	d := NewDeviceEntry()
+	d.Info.Id = deviceid
+	d.Info.Name = deviceid
 
 	// Save element in database
 	err := app.db.Update(func(tx *bolt.Tx) error {
 		err := n.Save(tx)
 		tests.Assert(t, err == nil)
+
+		err = d.Save(tx)
+		tests.Assert(t, err == nil)
+
 		return b.Save(tx)
 	})
 	tests.Assert(t, err == nil)

@@ -144,6 +144,22 @@ func (b *BrickEntry) Create(db *bolt.DB, executor executors.Executor) error {
 		return err
 	}
 
+	// Get device name
+	var deviceName string
+	err = db.View(func(tx *bolt.Tx) error {
+		device, err := NewDeviceEntryFromId(tx, b.Info.DeviceId)
+		if err != nil {
+			return err
+		}
+
+		deviceName = device.Info.Name
+		godbc.Check(deviceName != "")
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	// Create request
 	req := &executors.BrickRequest{}
 	req.Gid = b.gidRequested
@@ -152,6 +168,7 @@ func (b *BrickEntry) Create(db *bolt.DB, executor executors.Executor) error {
 	req.TpSize = b.TpSize
 	req.VgId = b.Info.DeviceId
 	req.PoolMetadataSize = b.PoolMetadataSize
+	req.Device = deviceName
 
 	// Create brick on node
 	logger.Info("Creating brick %v", b.Info.Id)
@@ -188,12 +205,29 @@ func (b *BrickEntry) Destroy(db *bolt.DB, executor executors.Executor) error {
 		return err
 	}
 
+	// Get device name
+	var deviceName string
+	err = db.View(func(tx *bolt.Tx) error {
+		device, err := NewDeviceEntryFromId(tx, b.Info.DeviceId)
+		if err != nil {
+			return err
+		}
+
+		deviceName = device.Info.Name
+		godbc.Check(deviceName != "")
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
 	// Create request
 	req := &executors.BrickRequest{}
 	req.Name = b.Info.Id
 	req.Size = b.Info.Size
 	req.TpSize = b.TpSize
 	req.VgId = b.Info.DeviceId
+	req.Device = deviceName
 
 	// Delete brick on node
 	logger.Info("Deleting brick %v", b.Info.Id)
