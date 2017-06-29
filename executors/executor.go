@@ -49,6 +49,7 @@ type DeviceInfo struct {
 type BrickRequest struct {
 	VgId             string
 	Name             string
+	Device           string
 	TpSize           uint64
 	Size             uint64
 	PoolMetadataSize uint64
@@ -64,6 +65,7 @@ type BrickInfo struct {
 type VolumeRequest struct {
 	Bricks               []BrickInfo
 	Name                 string
+	Size                 int
 	Type                 DurabilityType
 	GlusterVolumeOptions []string
 

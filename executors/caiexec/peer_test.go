@@ -24,7 +24,7 @@ func TestCaiExecPeerProbe(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		CLICommandConfig: CLICommandConfig{
@@ -54,7 +54,7 @@ func TestCaiExecPeerProbe(t *testing.T) {
 	tests.Assert(t, err == nil, err)
 
 	// Now set the snapshot limit
-	config = &SshConfig{
+	config = &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		CLICommandConfig: CLICommandConfig{
@@ -107,7 +107,7 @@ func TestCaiExecGlusterdCheck(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		CLICommandConfig: CLICommandConfig{

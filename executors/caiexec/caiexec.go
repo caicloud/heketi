@@ -42,7 +42,7 @@ type CaiExecutor struct {
 	private_keyfile string
 	user            string
 	exec            Ssher
-	config          *SshConfig
+	config          *CaiConfig
 	port            string
 }
 
@@ -50,7 +50,7 @@ var (
 	logger           = utils.NewLogger("[caiexec]", utils.LEVEL_DEBUG)
 	ErrSshPrivateKey = errors.New("Unable to read private key file")
 	sshNew           = func(logger *utils.Logger, user string, file string) (Ssher, error) {
-		s := ssh.NewCaiExecWithKeyFile(logger, user, file)
+		s := ssh.NewSshExecWithKeyFile(logger, user, file)
 		if s == nil {
 			return nil, ErrSshPrivateKey
 		}
@@ -58,7 +58,7 @@ var (
 	}
 )
 
-func setWithEnvVariables(config *SshConfig) {
+func setWithEnvVariables(config *CaiConfig) {
 	var env string
 
 	env = os.Getenv("HEKETI_SSH_KEYFILE")
@@ -91,7 +91,7 @@ func setWithEnvVariables(config *SshConfig) {
 
 }
 
-func NewCaiExecutor(config *SshConfig) (*CaiExecutor, error) {
+func NewCaiExecutor(config *CaiConfig) (*CaiExecutor, error) {
 	// Override configuration
 	setWithEnvVariables(config)
 
@@ -203,16 +203,14 @@ func (s *CaiExecutor) RemoteCommandExecute(host string,
 	return s.exec.ConnectAndExec(host+":"+s.port, commands, timeoutMinutes, s.config.Sudo)
 }
 
-func (s *CaiExecutor) vgName(vgId string) string {
-	return "vg_" + vgId
+func (s *CaiExecutor) rootPath(deviceName string) string {
+	godbc.Ensure(deviceName != "")
+
+	return deviceName + "/" + "glusterfs"
 }
 
 func (s *CaiExecutor) brickName(brickId string) string {
 	return "brick_" + brickId
-}
-
-func (s *CaiExecutor) tpName(brickId string) string {
-	return "tp_" + brickId
 }
 
 func (s *CaiExecutor) RebalanceOnExpansion() bool {

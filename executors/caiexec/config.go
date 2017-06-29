@@ -18,7 +18,7 @@ type CLICommandConfig struct {
 	RebalanceOnExpansion bool `json:"rebalance_on_expansion"`
 }
 
-type SshConfig struct {
+type CaiConfig struct {
 	CLICommandConfig
 	PrivateKeyFile string `json:"keyfile"`
 	User           string `json:"user"`

@@ -26,7 +26,7 @@ func TestCaiExecBrickCreate(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -43,6 +43,7 @@ func TestCaiExecBrickCreate(t *testing.T) {
 	b := &executors.BrickRequest{
 		VgId:             "xvgid",
 		Name:             "id",
+		Device:           "/disk/sata01",
 		TpSize:           100,
 		Size:             10,
 		PoolMetadataSize: 5,
@@ -55,42 +56,14 @@ func TestCaiExecBrickCreate(t *testing.T) {
 		useSudo bool) ([]string, error) {
 
 		tests.Assert(t, host == "myhost:100", host)
-		tests.Assert(t, len(commands) == 6)
+		tests.Assert(t, len(commands) == 1)
 
 		for i, cmd := range commands {
 			cmd = strings.Trim(cmd, " ")
 			switch i {
 			case 0:
 				tests.Assert(t,
-					cmd == "mkdir -p /var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
-
-			case 1:
-				tests.Assert(t,
-					cmd == "lvcreate --poolmetadatasize 5K "+
-						"-c 256K -L 100K -T vg_xvgid/tp_id -V 10K -n brick_id", cmd)
-
-			case 2:
-				tests.Assert(t,
-					cmd == "mkfs.xfs -i size=512 "+
-						"-n size=8192 /dev/mapper/vg_xvgid-brick_id", cmd)
-
-			case 3:
-				tests.Assert(t,
-					cmd == "echo \"/dev/mapper/vg_xvgid-brick_id "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id "+
-						"xfs rw,inode64,noatime,nouuid 1 2\" | "+
-						"tee -a /my/fstab > /dev/null", cmd)
-
-			case 4:
-				tests.Assert(t,
-					cmd == "mount -o rw,inode64,noatime,nouuid "+
-						"/dev/mapper/vg_xvgid-brick_id "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
-
-			case 5:
-				tests.Assert(t,
-					cmd == "mkdir "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id/brick", cmd)
+					cmd == "mkdir -p /disk/sata01/glusterfs/brick_id/brick", cmd)
 			}
 		}
 
@@ -111,7 +84,7 @@ func TestCaiExecBrickCreateWithGid(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -128,6 +101,7 @@ func TestCaiExecBrickCreateWithGid(t *testing.T) {
 	b := &executors.BrickRequest{
 		VgId:             "xvgid",
 		Name:             "id",
+		Device:           "/disk/sata01",
 		TpSize:           100,
 		Size:             10,
 		PoolMetadataSize: 5,
@@ -141,52 +115,22 @@ func TestCaiExecBrickCreateWithGid(t *testing.T) {
 		useSudo bool) ([]string, error) {
 
 		tests.Assert(t, host == "myhost:100", host)
-		tests.Assert(t, len(commands) == 8)
+		tests.Assert(t, len(commands) == 3)
 
 		for i, cmd := range commands {
 			cmd = strings.Trim(cmd, " ")
 			switch i {
 			case 0:
 				tests.Assert(t,
-					cmd == "mkdir -p /var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
+					cmd == "mkdir -p /disk/sata01/glusterfs/brick_id/brick", cmd)
 
 			case 1:
 				tests.Assert(t,
-					cmd == "lvcreate --poolmetadatasize 5K "+
-						"-c 256K -L 100K -T vg_xvgid/tp_id -V 10K -n brick_id", cmd)
+					cmd == "chown :1234 "+"/disk/sata01/glusterfs/brick_id/brick", cmd)
 
 			case 2:
 				tests.Assert(t,
-					cmd == "mkfs.xfs -i size=512 "+
-						"-n size=8192 /dev/mapper/vg_xvgid-brick_id", cmd)
-
-			case 3:
-				tests.Assert(t,
-					cmd == "echo \"/dev/mapper/vg_xvgid-brick_id "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id "+
-						"xfs rw,inode64,noatime,nouuid 1 2\" | "+
-						"tee -a /my/fstab > /dev/null", cmd)
-
-			case 4:
-				tests.Assert(t,
-					cmd == "mount -o rw,inode64,noatime,nouuid "+
-						"/dev/mapper/vg_xvgid-brick_id "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
-
-			case 5:
-				tests.Assert(t,
-					cmd == "mkdir "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id/brick", cmd)
-
-			case 6:
-				tests.Assert(t,
-					cmd == "chown :1234 "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id/brick", cmd)
-
-			case 7:
-				tests.Assert(t,
-					cmd == "chmod 2775 "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id/brick", cmd)
+					cmd == "chmod 2775 "+"/disk/sata01/glusterfs/brick_id/brick", cmd)
 			}
 		}
 
@@ -207,7 +151,7 @@ func TestCaiExecBrickCreateSudo(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -225,6 +169,7 @@ func TestCaiExecBrickCreateSudo(t *testing.T) {
 	b := &executors.BrickRequest{
 		VgId:             "xvgid",
 		Name:             "id",
+		Device:           "/disk/sata01",
 		TpSize:           100,
 		Size:             10,
 		PoolMetadataSize: 5,
@@ -237,7 +182,7 @@ func TestCaiExecBrickCreateSudo(t *testing.T) {
 		useSudo bool) ([]string, error) {
 
 		tests.Assert(t, host == "myhost:100", host)
-		tests.Assert(t, len(commands) == 6)
+		tests.Assert(t, len(commands) == 1)
 		tests.Assert(t, useSudo == true)
 
 		for i, cmd := range commands {
@@ -245,35 +190,7 @@ func TestCaiExecBrickCreateSudo(t *testing.T) {
 			switch i {
 			case 0:
 				tests.Assert(t,
-					cmd == "mkdir -p /var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
-
-			case 1:
-				tests.Assert(t,
-					cmd == "lvcreate --poolmetadatasize 5K "+
-						"-c 256K -L 100K -T vg_xvgid/tp_id -V 10K -n brick_id", cmd)
-
-			case 2:
-				tests.Assert(t,
-					cmd == "mkfs.xfs -i size=512 "+
-						"-n size=8192 /dev/mapper/vg_xvgid-brick_id", cmd)
-
-			case 3:
-				tests.Assert(t,
-					cmd == "echo \"/dev/mapper/vg_xvgid-brick_id "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id "+
-						"xfs rw,inode64,noatime,nouuid 1 2\" | "+
-						"tee -a /my/fstab > /dev/null", cmd)
-
-			case 4:
-				tests.Assert(t,
-					cmd == "mount -o rw,inode64,noatime,nouuid "+
-						"/dev/mapper/vg_xvgid-brick_id "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
-
-			case 5:
-				tests.Assert(t,
-					cmd == "mkdir "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id/brick", cmd)
+					cmd == "mkdir -p /disk/sata01/glusterfs/brick_id/brick", cmd)
 			}
 		}
 
@@ -294,7 +211,7 @@ func TestCaiExecBrickDestroy(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -311,6 +228,7 @@ func TestCaiExecBrickDestroy(t *testing.T) {
 	b := &executors.BrickRequest{
 		VgId:             "xvgid",
 		Name:             "id",
+		Device:           "/disk/sata01",
 		TpSize:           100,
 		Size:             10,
 		PoolMetadataSize: 5,
@@ -327,24 +245,9 @@ func TestCaiExecBrickDestroy(t *testing.T) {
 		for _, cmd := range commands {
 			cmd = strings.Trim(cmd, " ")
 			switch {
-			case strings.Contains(cmd, "umount"):
-				tests.Assert(t,
-					cmd == "umount "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
-
-			case strings.Contains(cmd, "lvremove"):
-				tests.Assert(t,
-					cmd == "lvremove -f vg_xvgid/tp_id", cmd)
-
 			case strings.Contains(cmd, "rmdir"):
 				tests.Assert(t,
-					cmd == "rmdir "+
-						"/var/lib/heketi/mounts/vg_xvgid/brick_id", cmd)
-
-			case strings.Contains(cmd, "sed"):
-				tests.Assert(t,
-					cmd == "sed -i.save "+
-						"\"/brick_id/d\" /my/fstab", cmd)
+					cmd == "rmdir /disk/sata01/glusterfs/brick_id/brick", cmd)
 			}
 		}
 

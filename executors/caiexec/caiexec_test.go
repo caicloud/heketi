@@ -54,7 +54,7 @@ func TestNewCaiExec(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -81,7 +81,7 @@ func TestCaiExecRebalanceOnExpansion(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -100,7 +100,7 @@ func TestCaiExecRebalanceOnExpansion(t *testing.T) {
 	tests.Assert(t, s.exec != nil)
 	tests.Assert(t, s.RebalanceOnExpansion() == false)
 
-	config = &SshConfig{
+	config = &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -129,7 +129,7 @@ func TestNewCaiExecDefaults(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 	}
 
@@ -145,7 +145,7 @@ func TestNewCaiExecDefaults(t *testing.T) {
 }
 
 func TestNewCaiExecBadPrivateKeyLocation(t *testing.T) {
-	config := &SshConfig{}
+	config := &CaiConfig{}
 
 	s, err := NewCaiExecutor(config)
 	tests.Assert(t, s == nil)
@@ -181,7 +181,7 @@ func TestCaiExecutorEnvVariables(t *testing.T) {
 	tests.Assert(t, err == nil)
 	defer os.Unsetenv("HEKETI_SSH_PORT")
 
-	config := &SshConfig{
+	config := &CaiConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",

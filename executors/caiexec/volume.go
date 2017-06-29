@@ -66,6 +66,8 @@ func (s *CaiExecutor) VolumeCreate(host string,
 
 	commands = append(commands, fmt.Sprintf("gluster --mode=script volume start %v", volume.Name))
 
+	commands = append(commands, s.createQuotaCommand(volume)...)
+
 	_, err := s.RemoteExecutor.RemoteCommandExecute(host, commands, 10)
 	if err != nil {
 		s.VolumeDestroy(host, volume.Name)
@@ -169,6 +171,19 @@ func (s *CaiExecutor) createVolumeOptionsCommand(volume *executors.VolumeRequest
 		}
 
 	}
+	return commands
+}
+
+func (s *CaiExecutor) createQuotaCommand(volume *executors.VolumeRequest) []string {
+	commands := []string{}
+	var cmd string
+
+	cmd = fmt.Sprintf("gluster --mode=script volume quota %v enable", volume.Name)
+	commands = append(commands, cmd)
+
+	cmd = fmt.Sprintf("gluster --mode=script volume quota %v limit-usage / %vGB", volume.Name, volume.Size)
+	commands = append(commands, cmd)
+
 	return commands
 }
 
