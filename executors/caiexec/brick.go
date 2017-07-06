@@ -84,7 +84,7 @@ func (s *CaiExecutor) BrickDestroy(host string,
 
 	// Cleanup the mount point
 	commands := []string{
-		fmt.Sprintf("rmdir %v", s.brickMountPoint(brick)),
+		fmt.Sprintf("rm -rf %v", s.brickMountPoint(brick)),
 	}
 	_, err := s.RemoteExecutor.RemoteCommandExecute(host, commands, 5)
 	if err != nil {
