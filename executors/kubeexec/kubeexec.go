@@ -12,28 +12,26 @@ package kubeexec
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
-	coreclient "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/core/v1"
-	"k8s.io/kubernetes/pkg/client/restclient"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	coreclient "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
 	"k8s.io/kubernetes/pkg/client/unversioned/remotecommand"
 	kubeletcmd "k8s.io/kubernetes/pkg/kubelet/server/remotecommand"
 
 	"github.com/heketi/heketi/executors/sshexec"
+	"github.com/heketi/heketi/pkg/kubernetes"
 	"github.com/heketi/heketi/pkg/utils"
 	"github.com/lpabon/godbc"
 )
 
 const (
 	KubeGlusterFSPodLabelKey = "glusterfs-node"
-	kubeServiceAccountDir    = "/var/run/secrets/kubernetes.io/serviceaccount/"
-	kubeNameSpaceFile        = kubeServiceAccountDir + v1.ServiceAccountNamespaceKey
 )
 
 type KubeExecutor struct {
@@ -122,7 +120,7 @@ func NewKubeExecutor(config *KubeConfig) (*KubeExecutor, error) {
 	// Get namespace
 	var err error
 	if k.config.Namespace == "" {
-		k.config.Namespace, err = k.readAllLinesFromFile(kubeNameSpaceFile)
+		k.config.Namespace, err = kubernetes.GetNamespace()
 		if err != nil {
 			return nil, logger.LogError("Namespace must be provided in configuration: %v", err)
 		}
@@ -199,7 +197,7 @@ func (k *KubeExecutor) ConnectAndExec(host, resource string,
 	}
 
 	// Get container name
-	podSpec, err := k.kube.Core().Pods(k.namespace).Get(podName)
+	podSpec, err := k.kube.Core().Pods(k.namespace).Get(podName, v1.GetOptions{})
 	if err != nil {
 		return nil, logger.LogError("Unable to get pod spec for %v: %v",
 			podName, err)
@@ -263,14 +261,6 @@ func (k *KubeExecutor) RebalanceOnExpansion() bool {
 
 func (k *KubeExecutor) SnapShotLimit() int {
 	return k.config.SnapShotLimit
-}
-
-func (k *KubeExecutor) readAllLinesFromFile(filename string) (string, error) {
-	fileBytes, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return "", logger.LogError("Error reading %v file: %v", filename, err.Error())
-	}
-	return string(fileBytes), nil
 }
 
 func (k *KubeExecutor) getPodNameByLabel(host string) (string, error) {

@@ -16,8 +16,6 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
-	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/heketi/heketi/executors"
 	"github.com/heketi/heketi/executors/kubeexec"
@@ -54,6 +52,7 @@ type App struct {
 	xo *mockexec.MockExecutor
 }
 
+// Use for tests only
 func NewApp(configIo io.Reader) *App {
 	app := &App{}
 
@@ -144,6 +143,13 @@ func NewApp(configIo io.Reader) *App {
 				return err
 			}
 
+			// Handle Upgrade Changes
+			err = app.Upgrade(tx)
+			if err != nil {
+				logger.LogError("Unable to Upgrade Changes")
+				return err
+			}
+
 			return nil
 
 		})
@@ -189,6 +195,42 @@ func (a *App) setLogLevel(level string) {
 	case "debug":
 		logger.SetLevel(utils.LEVEL_DEBUG)
 	}
+}
+
+// Upgrade Path to update all the values for new API entries
+func (a *App) Upgrade(tx *bolt.Tx) error {
+
+	err := ClusterEntryUpgrade(tx)
+	if err != nil {
+		logger.LogError("Failed to upgrade db for cluster entries")
+		return err
+	}
+
+	err = NodeEntryUpgrade(tx)
+	if err != nil {
+		logger.LogError("Failed to upgrade db for node entries")
+		return err
+	}
+
+	err = VolumeEntryUpgrade(tx)
+	if err != nil {
+		logger.LogError("Failed to upgrade db for volume entries")
+		return err
+	}
+
+	err = DeviceEntryUpgrade(tx)
+	if err != nil {
+		logger.LogError("Failed to upgrade db for device entries")
+		return err
+	}
+
+	err = BrickEntryUpgrade(tx)
+	if err != nil {
+		logger.LogError("Failed to upgrade db for brick entries: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 func (a *App) setAdvSettings() {
@@ -350,26 +392,6 @@ func (a *App) Close() {
 	// Close the DB
 	a.db.Close()
 	logger.Info("Closed")
-}
-
-// Middleware function
-func (a *App) Auth(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-
-	// Value saved by the JWT middleware.
-	data := context.Get(r, "jwt")
-
-	// Need to change from interface{} to the jwt.Token type
-	token := data.(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
-
-	// Check access
-	if "user" == claims["iss"] && r.URL.Path != "/volumes" {
-		http.Error(w, "Administrator access required", http.StatusUnauthorized)
-		return
-	}
-
-	// Everything is clean
-	next(w, r)
 }
 
 func (a *App) Backup(w http.ResponseWriter, r *http.Request) {

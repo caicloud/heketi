@@ -18,17 +18,15 @@ import (
 )
 
 func (s *SshExecutor) VolumeCreate(host string,
-	volume *executors.VolumeRequest) (*executors.VolumeInfo, error) {
+	volume *executors.VolumeRequest) (*executors.Volume, error) {
 
 	godbc.Require(volume != nil)
 	godbc.Require(host != "")
 	godbc.Require(len(volume.Bricks) > 0)
 	godbc.Require(volume.Name != "")
 
-	// Create volume command
 	cmd := fmt.Sprintf("gluster --mode=script volume create %v ", volume.Name)
 
-	// Add durability settings to the volume command
 	var (
 		inSet     int
 		maxPerSet int
@@ -51,41 +49,40 @@ func (s *SshExecutor) VolumeCreate(host string,
 		maxPerSet = 1
 	}
 
-	// Setup volume create command
-	// There could many, many bricks which could make the command line
-	// too long.  Instead, create the volume first, then add each brick set.
+	// There could many, many bricks, which could render a single command
+	// line that creates the volume with all the bricks too long.
+	// Therefore, we initially create the volume with the first brick set
+	// only, and then add each brick set in one subsequent command.
+
 	for _, brick := range volume.Bricks[:inSet] {
 		cmd += fmt.Sprintf("%v:%v ", brick.Host, brick.Path)
 	}
 
-	// Initialize the commands with the create command
 	commands := []string{cmd}
 
-	// Now add all the commands to add the bricks
 	commands = append(commands, s.createAddBrickCommands(volume, inSet, inSet, maxPerSet)...)
 
-	// Add command to start the volume
+	commands = append(commands, s.createVolumeOptionsCommand(volume)...)
+
 	commands = append(commands, fmt.Sprintf("gluster --mode=script volume start %v", volume.Name))
 
-	// Execute command
 	_, err := s.RemoteExecutor.RemoteCommandExecute(host, commands, 10)
 	if err != nil {
 		s.VolumeDestroy(host, volume.Name)
 		return nil, err
 	}
 
-	return &executors.VolumeInfo{}, nil
+	return &executors.Volume{}, nil
 }
 
 func (s *SshExecutor) VolumeExpand(host string,
-	volume *executors.VolumeRequest) (*executors.VolumeInfo, error) {
+	volume *executors.VolumeRequest) (*executors.Volume, error) {
 
 	godbc.Require(volume != nil)
 	godbc.Require(host != "")
 	godbc.Require(len(volume.Bricks) > 0)
 	godbc.Require(volume.Name != "")
 
-	// Add durability settings to the volume command
 	var (
 		inSet     int
 		maxPerSet int
@@ -102,50 +99,43 @@ func (s *SshExecutor) VolumeExpand(host string,
 		maxPerSet = 1
 	}
 
-	// Setup volume create command
 	commands := s.createAddBrickCommands(volume,
 		0, // start at the beginning of the brick list
 		inSet,
 		maxPerSet)
 
-	// Rebalance if configured
 	if s.RemoteExecutor.RebalanceOnExpansion() {
 		commands = append(commands,
 			fmt.Sprintf("gluster --mode=script volume rebalance %v start", volume.Name))
 	}
 
-	// Execute command
 	_, err := s.RemoteExecutor.RemoteCommandExecute(host, commands, 10)
 	if err != nil {
 		return nil, err
 	}
 
-	return &executors.VolumeInfo{}, nil
+	return &executors.Volume{}, nil
 }
 
 func (s *SshExecutor) VolumeDestroy(host string, volume string) error {
 	godbc.Require(host != "")
 	godbc.Require(volume != "")
 
-	// Shutdown volume
+	// First stop the volume, then delete it
+
 	commands := []string{
-		// stop gluster volume
 		fmt.Sprintf("gluster --mode=script volume stop %v force", volume),
 	}
 
-	// Execute command
 	_, err := s.RemoteExecutor.RemoteCommandExecute(host, commands, 10)
 	if err != nil {
 		logger.LogError("Unable to stop volume %v: %v", volume, err)
 	}
 
-	// Shutdown volume
 	commands = []string{
-		// stop gluster volume
 		fmt.Sprintf("gluster --mode=script volume delete %v", volume),
 	}
 
-	// Execute command
 	_, err = s.RemoteExecutor.RemoteCommandExecute(host, commands, 10)
 	if err != nil {
 		return logger.Err(fmt.Errorf("Unable to delete volume %v: %v", volume, err))
@@ -165,6 +155,21 @@ func (s *SshExecutor) VolumeDestroyCheck(host, volume string) error {
 	}
 
 	return nil
+}
+
+func (s *SshExecutor) createVolumeOptionsCommand(volume *executors.VolumeRequest) []string {
+	commands := []string{}
+	var cmd string
+
+	// Go through all the Options and create volume set command
+	for _, volOption := range volume.GlusterVolumeOptions {
+		if volOption != "" {
+			cmd = fmt.Sprintf("gluster --mode=script volume set %v %v", volume.Name, volOption)
+			commands = append(commands, cmd)
+		}
+
+	}
+	return commands
 }
 
 func (s *SshExecutor) createAddBrickCommands(volume *executors.VolumeRequest,
@@ -204,12 +209,10 @@ func (s *SshExecutor) checkForSnapshots(host, volume string) error {
 		} `xml:"snapList"`
 	}
 
-	// Get snapshot information for the specified volume
 	commands := []string{
 		fmt.Sprintf("gluster --mode=script snapshot list %v --xml", volume),
 	}
 
-	// Execute command
 	output, err := s.RemoteExecutor.RemoteCommandExecute(host, commands, 10)
 	if err != nil {
 		return fmt.Errorf("Unable to get snapshot information from volume %v: %v", volume, err)
@@ -227,4 +230,53 @@ func (s *SshExecutor) checkForSnapshots(host, volume string) error {
 	}
 
 	return nil
+}
+
+func (s *SshExecutor) VolumeInfo(host string, volume string) (*executors.Volume, error) {
+
+	godbc.Require(volume != "")
+	godbc.Require(host != "")
+
+	type CliOutput struct {
+		OpRet    int               `xml:"opRet"`
+		OpErrno  int               `xml:"opErrno"`
+		OpErrStr string            `xml:"opErrstr"`
+		VolInfo  executors.VolInfo `xml:"volInfo"`
+	}
+
+	command := []string{
+		fmt.Sprintf("gluster --mode=script volume info %v --xml", volume),
+	}
+
+	//Get the xml output of volume info
+	output, err := s.RemoteExecutor.RemoteCommandExecute(host, command, 10)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get volume info of volume name: %v", volume)
+	}
+	var volumeInfo CliOutput
+	err = xml.Unmarshal([]byte(output[0]), &volumeInfo)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to determine volume info of volume name: %v", volume)
+	}
+	logger.Debug("%+v\n", volumeInfo)
+	return &volumeInfo.VolInfo.Volumes.VolumeList[0], nil
+}
+
+func (s *SshExecutor) VolumeReplaceBrick(host string, volume string, oldBrick *executors.BrickInfo, newBrick *executors.BrickInfo) error {
+	godbc.Require(volume != "")
+	godbc.Require(host != "")
+	godbc.Require(oldBrick != nil)
+	godbc.Require(newBrick != nil)
+
+	// Replace the brick
+	command := []string{
+		fmt.Sprintf("gluster --mode=script volume replace-brick %v %v:%v %v:%v commit force", volume, oldBrick.Host, oldBrick.Path, newBrick.Host, newBrick.Path),
+	}
+	_, err := s.RemoteExecutor.RemoteCommandExecute(host, command, 10)
+	if err != nil {
+		return logger.Err(fmt.Errorf("Unable to replace brick %v:%v with %v:%v for volume %v", oldBrick.Host, oldBrick.Path, newBrick.Host, newBrick.Path, volume))
+	}
+
+	return nil
+
 }
