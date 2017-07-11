@@ -18,9 +18,9 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
 	"github.com/heketi/heketi/executors"
-	"github.com/heketi/heketi/executors/caiexec"
 	"github.com/heketi/heketi/executors/kubeexec"
 	"github.com/heketi/heketi/executors/mockexec"
+	"github.com/heketi/heketi/executors/rawexec"
 	"github.com/heketi/heketi/executors/sshexec"
 	"github.com/heketi/heketi/pkg/utils"
 	"github.com/heketi/rest"
@@ -79,8 +79,8 @@ func NewApp(configIo io.Reader) *App {
 		app.executor, err = kubeexec.NewKubeExecutor(&app.conf.KubeConfig)
 	case app.conf.Executor == "ssh" || app.conf.Executor == "":
 		app.executor, err = sshexec.NewSshExecutor(&app.conf.SshConfig)
-	case app.conf.Executor == "cai" || app.conf.Executor == "caiexec":
-		app.executor, err = caiexec.NewCaiExecutor(&app.conf.CaiConfig)
+	case app.conf.Executor == "raw" || app.conf.Executor == "rawexec":
+		app.executor, err = rawexec.NewRawExecutor(&app.conf.RawConfig)
 	default:
 		return nil
 	}

@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"os"
@@ -46,7 +46,7 @@ func (f *FakeSsh) ConnectAndExec(host string,
 
 }
 
-func TestNewCaiExec(t *testing.T) {
+func TestNewRawExec(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -54,7 +54,7 @@ func TestNewCaiExec(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -63,7 +63,7 @@ func TestNewCaiExec(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 	tests.Assert(t, s.private_keyfile == config.PrivateKeyFile)
@@ -73,7 +73,7 @@ func TestNewCaiExec(t *testing.T) {
 	tests.Assert(t, s.exec != nil)
 }
 
-func TestCaiExecRebalanceOnExpansion(t *testing.T) {
+func TestRawExecRebalanceOnExpansion(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -81,7 +81,7 @@ func TestCaiExecRebalanceOnExpansion(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -90,7 +90,7 @@ func TestCaiExecRebalanceOnExpansion(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 	tests.Assert(t, s.private_keyfile == config.PrivateKeyFile)
@@ -100,7 +100,7 @@ func TestCaiExecRebalanceOnExpansion(t *testing.T) {
 	tests.Assert(t, s.exec != nil)
 	tests.Assert(t, s.RebalanceOnExpansion() == false)
 
-	config = &CaiConfig{
+	config = &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -110,7 +110,7 @@ func TestCaiExecRebalanceOnExpansion(t *testing.T) {
 		},
 	}
 
-	s, err = NewCaiExecutor(config)
+	s, err = NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 	tests.Assert(t, s.private_keyfile == config.PrivateKeyFile)
@@ -122,18 +122,18 @@ func TestCaiExecRebalanceOnExpansion(t *testing.T) {
 
 }
 
-func TestNewCaiExecDefaults(t *testing.T) {
+func TestNewRawExecDefaults(t *testing.T) {
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
 		func(logger *utils.Logger, user string, file string) (Ssher, error) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 	tests.Assert(t, s.private_keyfile == "xkeyfile")
@@ -144,15 +144,15 @@ func TestNewCaiExecDefaults(t *testing.T) {
 
 }
 
-func TestNewCaiExecBadPrivateKeyLocation(t *testing.T) {
-	config := &CaiConfig{}
+func TestNewRawExecBadPrivateKeyLocation(t *testing.T) {
+	config := &RawConfig{}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, s == nil)
 	tests.Assert(t, err != nil)
 }
 
-func TestCaiExecutorEnvVariables(t *testing.T) {
+func TestRawExecutorEnvVariables(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -181,7 +181,7 @@ func TestCaiExecutorEnvVariables(t *testing.T) {
 	tests.Assert(t, err == nil)
 	defer os.Unsetenv("HEKETI_SSH_PORT")
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -190,7 +190,7 @@ func TestCaiExecutorEnvVariables(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 	tests.Assert(t, s.Throttlemap != nil)

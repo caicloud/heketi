@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ import (
 	"github.com/heketi/tests"
 )
 
-func TestCaiExecPeerProbe(t *testing.T) {
+func TestRawExecPeerProbe(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -24,7 +24,7 @@ func TestCaiExecPeerProbe(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		CLICommandConfig: CLICommandConfig{
@@ -32,7 +32,7 @@ func TestCaiExecPeerProbe(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 
@@ -54,7 +54,7 @@ func TestCaiExecPeerProbe(t *testing.T) {
 	tests.Assert(t, err == nil, err)
 
 	// Now set the snapshot limit
-	config = &CaiConfig{
+	config = &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		CLICommandConfig: CLICommandConfig{
@@ -63,7 +63,7 @@ func TestCaiExecPeerProbe(t *testing.T) {
 		},
 	}
 
-	s, err = NewCaiExecutor(config)
+	s, err = NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 
@@ -100,14 +100,14 @@ func TestCaiExecPeerProbe(t *testing.T) {
 
 }
 
-func TestCaiExecGlusterdCheck(t *testing.T) {
+func TestRawExecGlusterdCheck(t *testing.T) {
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
 		func(logger *utils.Logger, user string, file string) (Ssher, error) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		CLICommandConfig: CLICommandConfig{
@@ -115,7 +115,7 @@ func TestCaiExecGlusterdCheck(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 

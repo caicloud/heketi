@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"fmt"
@@ -17,16 +17,16 @@ import (
 )
 
 // Return the mount point for the brick
-func (s *CaiExecutor) brickMountPoint(brick *executors.BrickRequest) string {
+func (s *RawExecutor) brickMountPoint(brick *executors.BrickRequest) string {
 	return s.rootPath(brick.Device) + "/" + s.brickName(brick.Name) + "/brick"
 }
 
 // Device node for the lvm volume
-func (s *CaiExecutor) devnode(brick *executors.BrickRequest) string {
+func (s *RawExecutor) devnode(brick *executors.BrickRequest) string {
 	return s.rootPath(brick.Device) + "/" + s.brickName(brick.Name) + "/brick"
 }
 
-func (s *CaiExecutor) BrickCreate(host string,
+func (s *RawExecutor) BrickCreate(host string,
 	brick *executors.BrickRequest) (*executors.BrickInfo, error) {
 
 	godbc.Require(brick != nil)
@@ -72,7 +72,7 @@ func (s *CaiExecutor) BrickCreate(host string,
 	return b, nil
 }
 
-func (s *CaiExecutor) BrickDestroy(host string,
+func (s *RawExecutor) BrickDestroy(host string,
 	brick *executors.BrickRequest) error {
 
 	godbc.Require(brick != nil)
@@ -92,7 +92,7 @@ func (s *CaiExecutor) BrickDestroy(host string,
 	return nil
 }
 
-func (s *CaiExecutor) BrickDestroyCheck(host string,
+func (s *RawExecutor) BrickDestroyCheck(host string,
 	brick *executors.BrickRequest) error {
 	godbc.Require(brick != nil)
 	godbc.Require(host != "")

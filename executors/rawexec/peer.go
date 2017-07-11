@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ import (
 )
 
 // :TODO: Rename this function to NodeInit or something
-func (s *CaiExecutor) PeerProbe(host, newnode string) error {
+func (s *RawExecutor) PeerProbe(host, newnode string) error {
 
 	godbc.Require(host != "")
 	godbc.Require(newnode != "")
@@ -47,7 +47,7 @@ func (s *CaiExecutor) PeerProbe(host, newnode string) error {
 	return nil
 }
 
-func (s *CaiExecutor) PeerDetach(host, detachnode string) error {
+func (s *RawExecutor) PeerDetach(host, detachnode string) error {
 	godbc.Require(host != "")
 	godbc.Require(detachnode != "")
 
@@ -64,7 +64,7 @@ func (s *CaiExecutor) PeerDetach(host, detachnode string) error {
 	return nil
 }
 
-func (s *CaiExecutor) GlusterdCheck(host string) error {
+func (s *RawExecutor) GlusterdCheck(host string) error {
 	godbc.Require(host != "")
 
 	logger.Info("Check Glusterd service status in node %v", host)

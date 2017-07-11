@@ -14,8 +14,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/heketi/heketi/executors/caiexec"
 	"github.com/heketi/heketi/executors/kubeexec"
+	"github.com/heketi/heketi/executors/rawexec"
 	"github.com/heketi/heketi/executors/sshexec"
 )
 
@@ -24,7 +24,7 @@ type GlusterFSConfig struct {
 	Executor   string              `json:"executor"`
 	Allocator  string              `json:"allocator"`
 	SshConfig  sshexec.SshConfig   `json:"sshexec"`
-	CaiConfig  caiexec.CaiConfig   `json:"caiexec"`
+	RawConfig  rawexec.RawConfig   `json:"rawexec"`
 	KubeConfig kubeexec.KubeConfig `json:"kubeexec"`
 	Loglevel   string              `json:"loglevel"`
 

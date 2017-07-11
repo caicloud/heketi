@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"strings"
@@ -18,7 +18,7 @@ import (
 	"github.com/heketi/tests"
 )
 
-func TestCaiExecBrickCreate(t *testing.T) {
+func TestRawExecBrickCreate(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -26,7 +26,7 @@ func TestCaiExecBrickCreate(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -35,7 +35,7 @@ func TestCaiExecBrickCreate(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 
@@ -76,7 +76,7 @@ func TestCaiExecBrickCreate(t *testing.T) {
 
 }
 
-func TestCaiExecBrickCreateWithGid(t *testing.T) {
+func TestRawExecBrickCreateWithGid(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -84,7 +84,7 @@ func TestCaiExecBrickCreateWithGid(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -93,7 +93,7 @@ func TestCaiExecBrickCreateWithGid(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 
@@ -143,7 +143,7 @@ func TestCaiExecBrickCreateWithGid(t *testing.T) {
 
 }
 
-func TestCaiExecBrickCreateSudo(t *testing.T) {
+func TestRawExecBrickCreateSudo(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -151,7 +151,7 @@ func TestCaiExecBrickCreateSudo(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -161,7 +161,7 @@ func TestCaiExecBrickCreateSudo(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 
@@ -203,7 +203,7 @@ func TestCaiExecBrickCreateSudo(t *testing.T) {
 
 }
 
-func TestCaiExecBrickDestroy(t *testing.T) {
+func TestRawExecBrickDestroy(t *testing.T) {
 
 	f := NewFakeSsh()
 	defer tests.Patch(&sshNew,
@@ -211,7 +211,7 @@ func TestCaiExecBrickDestroy(t *testing.T) {
 			return f, nil
 		}).Restore()
 
-	config := &CaiConfig{
+	config := &RawConfig{
 		PrivateKeyFile: "xkeyfile",
 		User:           "xuser",
 		Port:           "100",
@@ -220,7 +220,7 @@ func TestCaiExecBrickDestroy(t *testing.T) {
 		},
 	}
 
-	s, err := NewCaiExecutor(config)
+	s, err := NewRawExecutor(config)
 	tests.Assert(t, err == nil)
 	tests.Assert(t, s != nil)
 

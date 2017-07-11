@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 type CLICommandConfig struct {
 	Fstab         string `json:"fstab"`
@@ -18,7 +18,7 @@ type CLICommandConfig struct {
 	RebalanceOnExpansion bool `json:"rebalance_on_expansion"`
 }
 
-type CaiConfig struct {
+type RawConfig struct {
 	CLICommandConfig
 	PrivateKeyFile string `json:"keyfile"`
 	User           string `json:"user"`

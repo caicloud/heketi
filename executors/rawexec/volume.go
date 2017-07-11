@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"encoding/xml"
@@ -17,7 +17,7 @@ import (
 	"github.com/lpabon/godbc"
 )
 
-func (s *CaiExecutor) VolumeCreate(host string,
+func (s *RawExecutor) VolumeCreate(host string,
 	volume *executors.VolumeRequest) (*executors.Volume, error) {
 
 	godbc.Require(volume != nil)
@@ -77,7 +77,7 @@ func (s *CaiExecutor) VolumeCreate(host string,
 	return &executors.Volume{}, nil
 }
 
-func (s *CaiExecutor) VolumeExpand(host string,
+func (s *RawExecutor) VolumeExpand(host string,
 	volume *executors.VolumeRequest) (*executors.Volume, error) {
 
 	godbc.Require(volume.Size > 0)
@@ -96,7 +96,7 @@ func (s *CaiExecutor) VolumeExpand(host string,
 	return &executors.Volume{}, nil
 }
 
-func (s *CaiExecutor) VolumeDestroy(host string, volume string) error {
+func (s *RawExecutor) VolumeDestroy(host string, volume string) error {
 	godbc.Require(host != "")
 	godbc.Require(volume != "")
 
@@ -123,7 +123,7 @@ func (s *CaiExecutor) VolumeDestroy(host string, volume string) error {
 	return nil
 }
 
-func (s *CaiExecutor) VolumeDestroyCheck(host, volume string) error {
+func (s *RawExecutor) VolumeDestroyCheck(host, volume string) error {
 	godbc.Require(host != "")
 	godbc.Require(volume != "")
 
@@ -136,7 +136,7 @@ func (s *CaiExecutor) VolumeDestroyCheck(host, volume string) error {
 	return nil
 }
 
-func (s *CaiExecutor) createVolumeOptionsCommand(volume *executors.VolumeRequest) []string {
+func (s *RawExecutor) createVolumeOptionsCommand(volume *executors.VolumeRequest) []string {
 	commands := []string{}
 	var cmd string
 
@@ -151,7 +151,7 @@ func (s *CaiExecutor) createVolumeOptionsCommand(volume *executors.VolumeRequest
 	return commands
 }
 
-func (s *CaiExecutor) createQuotaCommand(volume *executors.VolumeRequest) []string {
+func (s *RawExecutor) createQuotaCommand(volume *executors.VolumeRequest) []string {
 	commands := []string{}
 	var cmd string
 
@@ -164,7 +164,7 @@ func (s *CaiExecutor) createQuotaCommand(volume *executors.VolumeRequest) []stri
 	return commands
 }
 
-func (s *CaiExecutor) createAddBrickCommands(volume *executors.VolumeRequest,
+func (s *RawExecutor) createAddBrickCommands(volume *executors.VolumeRequest,
 	start, inSet, maxPerSet int) []string {
 
 	commands := []string{}
@@ -192,7 +192,7 @@ func (s *CaiExecutor) createAddBrickCommands(volume *executors.VolumeRequest,
 	return commands
 }
 
-func (s *CaiExecutor) checkForSnapshots(host, volume string) error {
+func (s *RawExecutor) checkForSnapshots(host, volume string) error {
 
 	// Structure used to unmarshal XML from snapshot gluster cli
 	type CliOutput struct {
@@ -224,7 +224,7 @@ func (s *CaiExecutor) checkForSnapshots(host, volume string) error {
 	return nil
 }
 
-func (s *CaiExecutor) VolumeInfo(host string, volume string) (*executors.Volume, error) {
+func (s *RawExecutor) VolumeInfo(host string, volume string) (*executors.Volume, error) {
 
 	godbc.Require(volume != "")
 	godbc.Require(host != "")
@@ -254,7 +254,7 @@ func (s *CaiExecutor) VolumeInfo(host string, volume string) (*executors.Volume,
 	return &volumeInfo.VolInfo.Volumes.VolumeList[0], nil
 }
 
-func (s *CaiExecutor) VolumeReplaceBrick(host string, volume string, oldBrick *executors.BrickInfo, newBrick *executors.BrickInfo) error {
+func (s *RawExecutor) VolumeReplaceBrick(host string, volume string, oldBrick *executors.BrickInfo, newBrick *executors.BrickInfo) error {
 	godbc.Require(volume != "")
 	godbc.Require(host != "")
 	godbc.Require(oldBrick != nil)

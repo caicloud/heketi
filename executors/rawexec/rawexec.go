@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"errors"
@@ -31,7 +31,7 @@ type Ssher interface {
 	ConnectAndExec(host string, commands []string, timeoutMinutes int, useSudo bool) ([]string, error)
 }
 
-type CaiExecutor struct {
+type RawExecutor struct {
 	// "Public"
 	Throttlemap    map[string]chan bool
 	Lock           sync.Mutex
@@ -42,12 +42,12 @@ type CaiExecutor struct {
 	private_keyfile string
 	user            string
 	exec            Ssher
-	config          *CaiConfig
+	config          *RawConfig
 	port            string
 }
 
 var (
-	logger           = utils.NewLogger("[caiexec]", utils.LEVEL_DEBUG)
+	logger           = utils.NewLogger("[rawexec]", utils.LEVEL_DEBUG)
 	ErrSshPrivateKey = errors.New("Unable to read private key file")
 	sshNew           = func(logger *utils.Logger, user string, file string) (Ssher, error) {
 		s := ssh.NewSshExecWithKeyFile(logger, user, file)
@@ -58,7 +58,7 @@ var (
 	}
 )
 
-func setWithEnvVariables(config *CaiConfig) {
+func setWithEnvVariables(config *RawConfig) {
 	var env string
 
 	env = os.Getenv("HEKETI_SSH_KEYFILE")
@@ -91,11 +91,11 @@ func setWithEnvVariables(config *CaiConfig) {
 
 }
 
-func NewCaiExecutor(config *CaiConfig) (*CaiExecutor, error) {
+func NewRawExecutor(config *RawConfig) (*RawExecutor, error) {
 	// Override configuration
 	setWithEnvVariables(config)
 
-	s := &CaiExecutor{}
+	s := &RawExecutor{}
 	s.RemoteExecutor = s
 	s.Throttlemap = make(map[string]chan bool)
 
@@ -149,7 +149,7 @@ func NewCaiExecutor(config *CaiConfig) (*CaiExecutor, error) {
 	return s, nil
 }
 
-func (s *CaiExecutor) SetLogLevel(level string) {
+func (s *RawExecutor) SetLogLevel(level string) {
 	switch level {
 	case "none":
 		logger.SetLevel(utils.LEVEL_NOLOG)
@@ -166,7 +166,7 @@ func (s *CaiExecutor) SetLogLevel(level string) {
 	}
 }
 
-func (s *CaiExecutor) AccessConnection(host string) {
+func (s *RawExecutor) AccessConnection(host string) {
 
 	var (
 		c  chan bool
@@ -183,7 +183,7 @@ func (s *CaiExecutor) AccessConnection(host string) {
 	c <- true
 }
 
-func (s *CaiExecutor) FreeConnection(host string) {
+func (s *RawExecutor) FreeConnection(host string) {
 	s.Lock.Lock()
 	c := s.Throttlemap[host]
 	s.Lock.Unlock()
@@ -191,7 +191,7 @@ func (s *CaiExecutor) FreeConnection(host string) {
 	<-c
 }
 
-func (s *CaiExecutor) RemoteCommandExecute(host string,
+func (s *RawExecutor) RemoteCommandExecute(host string,
 	commands []string,
 	timeoutMinutes int) ([]string, error) {
 
@@ -203,20 +203,20 @@ func (s *CaiExecutor) RemoteCommandExecute(host string,
 	return s.exec.ConnectAndExec(host+":"+s.port, commands, timeoutMinutes, s.config.Sudo)
 }
 
-func (s *CaiExecutor) rootPath(deviceName string) string {
+func (s *RawExecutor) rootPath(deviceName string) string {
 	godbc.Ensure(deviceName != "")
 
 	return deviceName + "/" + "glusterfs"
 }
 
-func (s *CaiExecutor) brickName(brickId string) string {
+func (s *RawExecutor) brickName(brickId string) string {
 	return "brick_" + brickId
 }
 
-func (s *CaiExecutor) RebalanceOnExpansion() bool {
+func (s *RawExecutor) RebalanceOnExpansion() bool {
 	return s.config.RebalanceOnExpansion
 }
 
-func (s *CaiExecutor) SnapShotLimit() int {
+func (s *RawExecutor) SnapShotLimit() int {
 	return s.config.SnapShotLimit
 }

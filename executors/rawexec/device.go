@@ -7,7 +7,7 @@
 // cases as published by the Free Software Foundation.
 //
 
-package caiexec
+package rawexec
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 )
 
 // Assume the disk is formatted before using
-func (s *CaiExecutor) DeviceSetup(host, rootPath, vgid string) (d *executors.DeviceInfo, e error) {
+func (s *RawExecutor) DeviceSetup(host, rootPath, vgid string) (d *executors.DeviceInfo, e error) {
 
 	// Setup commands
 	commands := []string{
@@ -44,7 +44,7 @@ func (s *CaiExecutor) DeviceSetup(host, rootPath, vgid string) (d *executors.Dev
 	return d, nil
 }
 
-func (s *CaiExecutor) DeviceTeardown(host, rootPath, vgid string) error {
+func (s *RawExecutor) DeviceTeardown(host, rootPath, vgid string) error {
 
 	// Setup commands
 	commands := []string{
@@ -61,7 +61,7 @@ func (s *CaiExecutor) DeviceTeardown(host, rootPath, vgid string) error {
 	return nil
 }
 
-func (s *CaiExecutor) getDiskSizeFromNode(d *executors.DeviceInfo, _host, _rootPath string) error {
+func (s *RawExecutor) getDiskSizeFromNode(d *executors.DeviceInfo, _host, _rootPath string) error {
 
 	// TBD: No limit of disk size(1PB)
 	d.Size = 1024 * 1024 * 1024 * 1024 * 1024
