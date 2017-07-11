@@ -15,12 +15,11 @@ import (
 )
 
 // Assume the disk is formatted before using
-// device is the actual disk path, not UUID
-func (s *CaiExecutor) DeviceSetup(host, device, vgid string) (d *executors.DeviceInfo, e error) {
+func (s *CaiExecutor) DeviceSetup(host, rootPath, vgid string) (d *executors.DeviceInfo, e error) {
 
 	// Setup commands
 	commands := []string{
-		fmt.Sprintf("mkdir -p /%s/%s", device, vgid),
+		fmt.Sprintf("mkdir -p /%s/%s", rootPath, vgid),
 	}
 
 	// Execute command
@@ -32,12 +31,12 @@ func (s *CaiExecutor) DeviceSetup(host, device, vgid string) (d *executors.Devic
 	// Create a cleanup function if anything fails
 	defer func() {
 		if e != nil {
-			s.DeviceTeardown(host, device, vgid)
+			s.DeviceTeardown(host, rootPath, vgid)
 		}
 	}()
 
 	d = &executors.DeviceInfo{}
-	err = s.getDiskSizeFromNode(d, host, device)
+	err = s.getDiskSizeFromNode(d, host, rootPath)
 	if err != nil {
 		return nil, err
 	}
@@ -45,24 +44,24 @@ func (s *CaiExecutor) DeviceSetup(host, device, vgid string) (d *executors.Devic
 	return d, nil
 }
 
-func (s *CaiExecutor) DeviceTeardown(host, device, vgid string) error {
+func (s *CaiExecutor) DeviceTeardown(host, rootPath, vgid string) error {
 
 	// Setup commands
 	commands := []string{
-		fmt.Sprintf("rm -rf /%s/%s", device, vgid),
+		fmt.Sprintf("rm -rf /%s/%s", rootPath, vgid),
 	}
 
 	// Execute command
 	_, err := s.RemoteExecutor.RemoteCommandExecute(host, commands, 5)
 	if err != nil {
-		logger.LogError("Error while deleting device %v on %v with id %v",
-			device, host, vgid)
+		logger.LogError("Error while deleting path %v on %v with id %v",
+			rootPath, host, vgid)
 	}
 
 	return nil
 }
 
-func (s *CaiExecutor) getDiskSizeFromNode(d *executors.DeviceInfo, _host, _device string) error {
+func (s *CaiExecutor) getDiskSizeFromNode(d *executors.DeviceInfo, _host, _rootPath string) error {
 
 	// TBD: No limit of disk size(1PB)
 	d.Size = 1024 * 1024 * 1024 * 1024 * 1024
