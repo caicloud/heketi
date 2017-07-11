@@ -32,9 +32,6 @@ type GlusterFSConfig struct {
 	BrickMaxSize int `json:"brick_max_size_gb"`
 	BrickMinSize int `json:"brick_min_size_gb"`
 	BrickMaxNum  int `json:"max_bricks_per_volume"`
-
-	// volume expand method
-	ExpandMethod string `json:"expand_method"`
 }
 
 type ConfigFile struct {

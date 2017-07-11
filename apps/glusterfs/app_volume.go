@@ -314,7 +314,7 @@ func (a *App) VolumeExpand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if a.conf.ExpandMethod == "quota" {
+	if a.conf.Executor == "raw" || a.conf.Executor == "rawexec" {
 		volume.ExpandByQuota = true
 	} else {
 		volume.ExpandByQuota = false
