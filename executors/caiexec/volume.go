@@ -83,47 +83,7 @@ func (s *CaiExecutor) VolumeExpand(host string,
 	godbc.Require(volume.Size > 0)
 	godbc.Require(volume.Name != "")
 
-	// type Limit struct {
-	// 	XMLName          xml.Name `xml:"limit"`
-	// 	Path             string   `xml:"path"`
-	// 	HardLimit        int64    `xml:"hard_limit"`
-	// 	SoftLimitPercent string   `xml:"soft_limit_percent"`
-	// 	SoftLimitValue   int64    `xml:"soft_limit_value"`
-	// 	UsedSpace        int64    `xml:"used_space"`
-	// 	AvailSpace       int64    `xml:"avail_space"`
-	// 	SlExceeded       string   `xml:"sl_exceeded"`
-	// 	HlExceeded       string   `xml:"hl_exceeded"`
-	// }
-	//
-	// type VolQuota struct {
-	// 	XMLName xml.Name `xml:"volQuota"`
-	// 	Limits  []Limit  `xml:"volQuota"`
-	// }
-	//
-	// command := []string{
-	// 	fmt.Sprintf("gluster --mode=script volume quota %v list --xml", volume.Name),
-	// }
-	//
-	// // Get the xml output of volume quota list
-	// output, err := s.RemoteExecutor.RemoteCommandExecute(host, command, 10)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("Unable to get volume quota list of volume name: %v", volume)
-	// }
-	// var volQuota VolQuota
-	// err = xml.Unmarshal([]byte(output[0]), &volQuota)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("Unable to determine volume quota list of volume name: %v", volume)
-	// }
-	// logger.Debug("%+v\n", volQuota)
-	// var currentQuota Limit
-	//
-	// for _, limit := range volQuota.Limits {
-	// 	if limit.Path == "/" {
-	// 		currentQuota = limit
-	// 	}
-	// }
-
-	// TBD: simply expand with expected limit
+	// simply expand with expected limit
 	command := []string{
 		fmt.Sprintf("gluster --mode=script volume quota %v limit-usage / %vGB", volume.Name, volume.Size),
 	}

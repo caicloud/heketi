@@ -33,9 +33,7 @@ func (s *CaiExecutor) BrickCreate(host string,
 	godbc.Require(host != "")
 	godbc.Require(brick.Name != "")
 	godbc.Require(brick.Size > 0)
-	// godbc.Require(brick.TpSize >= brick.Size)
 	godbc.Require(brick.VgId != "")
-	// godbc.Require(s.Fstab != "")
 
 	// Create mountpoint name
 	mountpoint := s.brickMountPoint(brick)
