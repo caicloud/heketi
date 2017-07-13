@@ -36,7 +36,7 @@ PACKAGE :=$(DIR)/dist/$(APP_NAME)-$(VERSION).$(GOOS).$(ARCH).tar.gz
 CLIENT_PACKAGE :=$(DIR)/dist/$(APP_NAME)-client-$(VERSION).$(GOOS).$(ARCH).tar.gz
 GOFILES=$(shell go list ./... | grep -v vendor)
 
-.DEFAULT: all
+.DEFAULT: all docker
 
 all: server client
 
@@ -89,6 +89,15 @@ clean:
 	rm -rf $(APP_NAME)
 	rm -rf dist
 	@$(MAKE) -C client/cli/go clean
+
+docker:
+ifdef DOCKER_REGISTRY
+	@echo "Push image $(APP_NAME):$(VERSION) to $(DOCKER_REGISTRY)/caicloud/$(APP_NAME):$(VERSION:v%=%)"
+	docker build -t $(DOCKER_REGISTRY)/caicloud/$(APP_NAME):$(VERSION:v%=%) .
+else
+	@echo "Push image $(APP_NAME):$(VERSION) to default docker registry(default is hub.docker.com)"
+	docker build -t caicloud/$(APP_NAME):$(VERSION:v%=%) .
+endif
 
 $(PACKAGE): all
 	@echo Packaging Binaries...
