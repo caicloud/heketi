@@ -42,6 +42,7 @@ type VolumeEntry struct {
 	Bricks               sort.StringSlice
 	Durability           VolumeDurability
 	GlusterVolumeOptions []string
+	ExpandByQuota        bool
 }
 
 func VolumeList(tx *bolt.Tx) ([]string, error) {
@@ -487,6 +488,17 @@ func (v *VolumeEntry) Expand(db *bolt.DB,
 	allocator Allocator,
 	sizeGB int) (e error) {
 
+	if v.ExpandByQuota {
+		return v.expandByQuota(db, executor, allocator, sizeGB)
+	} else {
+		return v.expandByBrick(db, executor, allocator, sizeGB)
+	}
+}
+
+func (v *VolumeEntry) expandByBrick(db *bolt.DB,
+	executor executors.Executor,
+	allocator Allocator,
+	sizeGB int) (e error) {
 	// Allocate new bricks in the cluster
 	brick_entries, err := v.allocBricksInCluster(db, allocator, v.Info.Cluster, sizeGB)
 	if err != nil {
@@ -557,6 +569,67 @@ func (v *VolumeEntry) Expand(db *bolt.DB,
 
 	return err
 
+}
+
+func (v *VolumeEntry) expandByQuota(db *bolt.DB,
+	executor executors.Executor,
+	allocator Allocator,
+	sizeGB int) (e error) {
+
+	// Get the entries from the database
+	brick_entries := make([]*BrickEntry, len(v.Bricks))
+	var host string
+	db.View(func(tx *bolt.Tx) error {
+		for index, id := range v.BricksIds() {
+			brick, err := NewBrickEntryFromId(tx, id)
+			if err != nil {
+				logger.LogError("Brick %v not found in db: %v", id, err)
+				continue
+			}
+			brick_entries[index] = brick
+
+			// Set ssh host to send volume commands
+			if host == "" {
+				node, err := NewNodeEntryFromId(tx, brick.Info.NodeId)
+				if err != nil {
+					logger.LogError("Unable to determine brick node: %v", err)
+					return err
+				}
+				host = node.ManageHostName()
+			}
+		}
+		return nil
+	})
+
+	// Increase the recorded volume size
+	v.Info.Size += sizeGB
+
+	vr := &executors.VolumeRequest{}
+	vr.Name = v.Info.Name
+	vr.Size = v.Info.Size
+
+	// Expand the volume
+	_, err := executor.VolumeExpand(host, vr)
+	if err != nil {
+		return err
+	}
+
+	// Save volume entry
+	err = db.Update(func(tx *bolt.Tx) error {
+
+		// Save brick entries
+		for _, brick := range brick_entries {
+			brick.Info.Size += uint64(sizeGB) * GB
+			err := brick.Save(tx)
+			if err != nil {
+				return err
+			}
+		}
+
+		return v.Save(tx)
+	})
+
+	return err
 }
 
 func (v *VolumeEntry) BricksIds() sort.StringSlice {

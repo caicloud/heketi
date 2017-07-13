@@ -314,6 +314,12 @@ func (a *App) VolumeExpand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if a.conf.Executor == "raw" || a.conf.Executor == "rawexec" {
+		volume.ExpandByQuota = true
+	} else {
+		volume.ExpandByQuota = false
+	}
+
 	// Expand volume in an asynchronous function
 	a.asyncManager.AsyncHttpRedirectFunc(w, r, func() (string, error) {
 

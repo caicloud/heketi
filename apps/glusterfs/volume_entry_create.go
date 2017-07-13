@@ -97,6 +97,7 @@ func (v *VolumeEntry) createVolumeRequest(db *bolt.DB,
 
 	// Setup volume information in the request
 	vr.Name = v.Info.Name
+	vr.Size = v.Info.Size
 	v.Durability.SetExecutorVolumeRequest(vr)
 	vr.GlusterVolumeOptions = v.GlusterVolumeOptions
 
