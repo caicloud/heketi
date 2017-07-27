@@ -90,14 +90,16 @@ clean:
 	rm -rf dist
 	@$(MAKE) -C client/cli/go clean
 
-docker:
 ifdef DOCKER_REGISTRY
-	@echo "Push image $(APP_NAME):$(VERSION) to $(DOCKER_REGISTRY)/caicloud/$(APP_NAME):$(VERSION:v%=%)"
-	docker build -t $(DOCKER_REGISTRY)/caicloud/$(APP_NAME):$(VERSION:v%=%) .
+DOCKER_IMAGE=$(DOCKER_REGISTRY)/caicloud/$(APP_NAME):$(VERSION)
 else
-	@echo "Push image $(APP_NAME):$(VERSION) to default docker registry(default is hub.docker.com)"
-	docker build -t caicloud/$(APP_NAME):$(VERSION:v%=%) .
+DOCKER_IMAGE=caicloud/$(APP_NAME):$(VERSION)
 endif
+
+docker:
+	docker build -t $(DOCKER_IMAGE) .
+	@echo "Push image $(APP_NAME):$(VERSION) to $(DOCKER_IMAGE)"
+	docker push $(DOCKER_IMAGE)
 
 $(PACKAGE): all
 	@echo Packaging Binaries...
