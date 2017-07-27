@@ -1,6 +1,6 @@
 #!/bin/sh
 # Author: Delweng Zheng <delweng@gmail.com>
-
+set -e
 
 usage() {
     echo "Usage: $0 -c /path/to/config/file -b /path/to/backup/dir -d /path/to/heketi/database/dbfile"
@@ -8,7 +8,7 @@ usage() {
 }
 
 
-TEMP=$(getopt -o c:b:d:h: --long config:,backup:,datadb:,help -- "$@")
+TEMP=$(getopt -o c:b:d:h --long config:,backup:,datadb:,help -- "$@")
 eval set -- "$TEMP"
 
 while true
@@ -35,7 +35,7 @@ datadb_dir=$(dirname $datadb)
 mkdir -p $backup
 if [ ! -f $datadb ]; then
     recent=$(ls $backup | sort -r | head -1)
-    if [ $recent -ne "" ]; then
+    if [ "$recent" != "" ]; then
         tar zxf $backup/$recent -C $datadb_dir
         ret=$?
         if [ $ret -ne 0 ]; then
@@ -56,4 +56,4 @@ if [ $? != 0 ]; then
 fi
 
 echo "Run as '/usr/bin/heketi --config=$config --backup=$backup --datadb=$datadb'"
-/usr/bin/heketi --config=$config
+exec "/usr/bin/heketi --config=$config"
