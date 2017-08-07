@@ -1,6 +1,5 @@
 #!/bin/sh
 # Author: Delweng Zheng <delweng@gmail.com>
-set -e
 
 usage() {
     echo "Usage: $0 -c /path/to/config/file -b /path/to/backup/dir -d /path/to/heketi/database/dbfile"
