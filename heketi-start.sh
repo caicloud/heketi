@@ -54,5 +54,5 @@ if [ $? != 0 ]; then
     cron -L15
 fi
 
-echo "Run as '/usr/bin/heketi --config=$config --backup=$backup --datadb=$datadb'"
-exec "/usr/bin/heketi --config=$config"
+echo "Run as '/usr/bin/heketi --backup=$backup --config=$config --datadb=$datadb'"
+exec "/usr/bin/heketi" "--config=$config"
