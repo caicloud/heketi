@@ -2,7 +2,7 @@
 # Author: Delweng Zheng <delweng@gmail.com>
 
 usage() {
-    echo "Usage: $0 -c /path/to/config/file -b /path/to/backup/dir -d /path/to/heketi/database/dbfile"
+    echo "Usage: $0 -b /path/to/backup/dir -c /path/to/config/file -d /path/to/heketi/database/dbfile"
     exit 1
 }
 
@@ -13,10 +13,10 @@ eval set -- "$TEMP"
 while true
 do
     case $1 in
-        -c|--config)
-            config=$2; shift 2;;
         -b|--backup)
             backup=$2; shift 2;;
+        -c|--config)
+            config=$2; shift 2;;
         -d|--datadb)
             datadb=$2; shift 2;;
         --)
@@ -26,8 +26,8 @@ do
     esac
 done
 
-config=${config-/etc/heketi/heketi.json}
 backup=${backup-/backupdb/}
+config=${config-/etc/heketi/heketi.json}
 datadb=${datadb-/var/lib/heketi/heketi.db}
 datadb_dir=$(dirname $datadb)
 
@@ -54,5 +54,5 @@ if [ $? != 0 ]; then
     cron -L15
 fi
 
-echo "Run as '/usr/bin/heketi --config=$config --backup=$backup --datadb=$datadb'"
-exec "/usr/bin/heketi --config=$config"
+echo "Run as '/usr/bin/heketi --backup=$backup --config=$config --datadb=$datadb'"
+exec "/usr/bin/heketi" "--config=$config"

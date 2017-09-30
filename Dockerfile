@@ -12,7 +12,8 @@ RUN apt-get update \
 ADD ./heketi /usr/bin/heketi
 ADD ./client/cli/go/heketi-cli /usr/bin/heketi-cli
 ADD ./heketi-start.sh /usr/bin/heketi-start.sh
-VOLUME [/etc/heketi, /var/lib/heketi]
+ADD ./heketi-init.sh /usr/bin/heketi-init.sh
+VOLUME ["/etc/heketi", "/var/lib/heketi"]
 
 ENTRYPOINT ["/usr/bin/heketi-start.sh"]
 EXPOSE 8080
