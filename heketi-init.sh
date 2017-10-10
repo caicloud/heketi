@@ -11,8 +11,8 @@ if [ ! -z $VOLUME_PATH ]; then
     volume_path="$VOLUME_PATH"
     record_path="${VOLUME_PATH}/loaded_records"
 else
-    volume_path="/usr/local/heketi"
-    record_path="/usr/local/heketi/loaded_records"
+    volume_path="/var/lib/heketi"
+    record_path="/var/lib/heketi/loaded_records"
 fi
 mkdir -p $(dirname $record_path)
 if [ ! -f $record_path ]; then
