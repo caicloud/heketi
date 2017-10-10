@@ -3,11 +3,11 @@
 #
 
 .PHONY: version all run dist clean
-	
+
 APP_NAME := heketi-cli
 SHA := $(shell git rev-parse --short HEAD)
 BRANCH := $(subst /,-,$(shell git rev-parse --abbrev-ref HEAD))
-VER := $(shell git describe)
+VER := $(shell git describe --tags)
 ARCH := $(shell go env GOARCH)
 GOOS := $(shell go env GOOS)
 DIR=.
@@ -55,7 +55,7 @@ build:
 run: build
 	./$(APP_NAME)
 
-test: 
+test:
 	go test ./...
 
 clean:
